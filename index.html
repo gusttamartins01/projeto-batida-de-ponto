@@ -1,0 +1,183 @@
+#<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Batida de Ponto Facial</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #064420; /* verde escuro */
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+    }
+
+    /* Banner no topo */
+    .banner-container {
+      width: 100%;
+      max-height: 200px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+
+    .banner-image {
+      max-height: 100%;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .main-content {
+      border: 2px solid white;
+      border-radius: 12px;
+      padding: 30px 25px;
+      max-width: 420px;
+      margin: 0 auto 40px;
+      background-color: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 15px rgba(255,255,255,0.15);
+      text-align: center;
+    }
+
+    .camera-wrapper {
+      width: 250px;
+      height: 250px;
+      border: 3px solid white;
+      border-radius: 10px;
+      overflow: hidden;
+      background: black;
+      box-shadow: 0 0 8px black;
+      margin: 0 auto 1rem;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.3);
+      object-position: center top;
+    }
+
+    canvas {
+      display: none;
+    }
+
+    .btn-custom {
+      background-color: white;
+      color: black;
+      font-weight: bold;
+      font-size: 1.1rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      border: 2px solid black;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      margin-bottom: 10px;
+    }
+
+    .btn-custom:hover {
+      background-color: black;
+      color: white;
+      border-color: white;
+      box-shadow: 0 6px 15px rgba(255, 255, 255, 0.6);
+      transform: scale(1.05);
+    }
+
+    .alert-success {
+      background-color: white;
+      color: #064420;
+      border: none;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    h2 {
+      text-shadow: 1px 1px 4px black;
+      margin-bottom: 2rem;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <!-- Banner no topo -->
+  <div class="banner-container">
+    <img src="logo2.png" alt="Logo" class="banner-image" />
+  </div>
+
+  <div class="main-content">
+    <h2>Registro de Ponto Facial</h2>
+
+    <!-- CÂMERA -->
+    <div id="cameraContainer" class="camera-wrapper d-none">
+      <video id="video" autoplay playsinline></video>
+    </div>
+
+    <!-- BOTÕES -->
+    <button id="btnAbrirCamera" class="btn btn-custom" onclick="abrirCamera()">📷 Abrir Câmera</button>
+    <button id="btnBaterPonto" class="btn btn-custom d-none" onclick="capturarFoto()">✅ Bater Ponto</button>
+
+    <canvas id="canvas"></canvas>
+
+    <!-- MENSAGEM -->
+    <div class="alert alert-success d-none text-center" id="mensagemPonto">
+      ✅ Ponto registrado com sucesso!
+    </div>
+  </div>
+
+  <script>
+    let videoStream;
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const mensagem = document.getElementById('mensagemPonto');
+    const cameraContainer = document.getElementById('cameraContainer');
+    const btnAbrirCamera = document.getElementById('btnAbrirCamera');
+    const btnBaterPonto = document.getElementById('btnBaterPonto');
+
+    function abrirCamera() {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+        .then(stream => {
+          videoStream = stream;
+          video.srcObject = stream;
+          cameraContainer.classList.remove("d-none");
+          btnAbrirCamera.classList.add("d-none");
+          btnBaterPonto.classList.remove("d-none");
+          mensagem.classList.add("d-none");
+        })
+        .catch(err => {
+          alert("Erro ao acessar a câmera: " + err);
+        });
+    }
+
+    function capturarFoto() {
+      if (!videoStream) {
+        alert("Por favor, abra a câmera primeiro.");
+        return;
+      }
+
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imagemBase64 = canvas.toDataURL('image/png');
+      console.log("Imagem capturada:", imagemBase64);
+
+      mensagem.classList.remove("d-none");
+
+      // Parar câmera
+      videoStream.getTracks().forEach(track => track.stop());
+    }
+  </script>
+</body>
+</html>
